@@ -1,0 +1,183 @@
+
+NOTES && IDEAS:
+
+https://davidzwirnerbooks.com/product/oscar-murillo-frequencies
+
+TODO:
+[-] tech blog post
+[ ] url?
+[ ] can I make it wrap?
+	- seems to want to?
+[-] draft an email blast and social post
+[ ] check re AWS, do it
+	- just grid layout script
+[ ] add some links to essay
+	- CL listings for locations mentioned
+	- tech blog post
+[ ] dynamic zoom for smaller screens
+	- change custom tiles in index.html
+[-] github repo
+
+[X] social images, reg w Facebook
+	- fb 470x246 png
+	- twitter 1024x512
+	- insta 1080x1080
+	- open graph 1200x630
+[X] analytics
+
+
+- - -
+
+TRAINING NN
+
+Resize ahead of training
+	find . -name '*.jpg' -execdir mogrify -resize 64x64! {} \;
+
+	(note the quotes in the pattern, which works for long file lists)
+	(and ! makes sure aspect ratio is NOT preserved)
+
+If necessary, remove duplicate images 
+(May be stock photos, multiple listings repeating the same photos, etc)
+	DeleteDuplicateImages.py (in its own folder)
+
+Change colorspace of images, if necessary for Processing
+	find . -name '*.jpg' -execdir mogrify -colorspace RGB {} \;
+
+Then copy that folder twice (named Blurred and VeryBlurred) and blur the images...
+	find . -name '*.jpg' -execdir mogrify -blur 0x3 {} \;
+	find . -name '*.jpg' -execdir mogrify -blur 0x8 {} \;
+
+(next few scripts in the "GridLayout" folder...)
+Stack images of varying blur levels vertically
+	StackImages.py
+
+Extract features (all the pixels) of the images into an hdf5 file
+	ExtractFeatures.py
+
+Run initial dim reduction with PCA
+	PCA.py
+
+Run final reduction to 2D with t-SNE
+	tSNE.py (or) tSNE_Multicore.py
+
+Convert to a grid using Rasterfairy
+	HDF5_to_NormalizedCSV.py (run w/o normalization, seems to break RF)
+	
+	(then)
+
+	Grid.py
+
+Save out a text file with filenames in 1D order, one filename per line
+	Sort1D.py
+
+Generate map tiles for most zoomed-in level
+(First, double-check that path in txt file looks right – might have to do 
+a find-and-replace to the FINAL folder)
+	GenerateSlippyMapTiles.pde
+
+Create other zoom levels as needed
+	CreateNewZoomLevel.pde
+
+- - -
+
+https://www.server4you.com/virtual-server
+https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04
+https://www.thefanclub.co.za/how-to/how-secure-ubuntu-1604-lts-server-part-1-basics
+http://monitive.com/get.smarter/2013/04/18/setup-your-iptables-firewall-in-5-minutes/
+https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-iptables-on-ubuntu-14-04
+
+- - -
+
+all images = approx 80,211,780 px long
+49,089,609,360 total px for all images
+image should be approx 221,562 px square
+
+
+STEP 1
+Batch resize with mogrify (512px high = split across 2 tiles):
+find . -name '*.jpg' -execdir mogrify -verbose -resize x512 {} \;
+
+STEP 2
+Get list of all images, set to full path, randomize
+find . -name '*.jpg' > AllApartments.txt
+(fix path and edit > permute lines > shuffle in Sublime Text)
+
+STEP 3
+Get average width of all images
+
+STEP 4
+Make into "slippy tiles" of 256px square
+
+STEP 5
+Rename tiles by tile #, not px position
+
+- - -
+
++--+----+------+--+ <<-- get as close to full width without going over
+|  |    |      |  |
++--+--+-+-+--+-+--+
+|     |   |  |    |
++-----+---+--+----+
+
+- load list of files
+- one-by-one, add to master image
+- when edge reached, new line
+
+- - -
+
+http://build-failed.blogspot.com/2012/11/zoomable-image-with-leaflet.html
+
+Install GDAL for Python
+- brew install gdal
+- test by running gdal2tiles.py, should get man page
+
+Resize image to a power of 2, square format
+- ex: zoom level 5 = 8192px
+
+Run gdal2tiles command
+- command: gdal2tiles.py -p raster -z 6 -w none test.jpg
+- p = projection, w = generate webviewer code (we'll 
+  do it manually w Leaflet), z = zoom levels to create;
+  can also be range (ex 0-6); final arg is input image
+
+- - -
+
+Merge into single tiled image
+montage *.jpg -gravity center -tile _x_ all.png
+* get # of tiles as sqrt(total number of images)
+
+Custom OpenLayers map tiles
+- 256 x 256 px PNG files
+- each zoom level is a dir
+	- each col is a subdir, each tile is a file
+	- filename/url format: /zoom/x/y.png
+- zoom levels:
+	(current test version zoom = 4)
+	0:  1 tile = whole world
+	1:  2 x 2 tiles = world
+	2:  4 x 4 tiles = world
+	n:  2^n x 2^n tiles = world
+	12: 4096 x 4096 = worlds
+	19: max zoom for mapnik layer
+- x goes from 0 (left edge) to 2^zoom - 1; y top to bottom
+
+Split into tiles
+convert -crop 256x256 test.tif %d.png
+- working with large images:
+	http://www.imagemagick.org/Usage/files/#massive
+
+- - -
+
+- filter out images of floorplans?
+	- floorplan: 	0.29	
+	- color floor: 	0.62
+	- fancy floor: 	0.62
+	- photo/floor: 	0.91
+	- photo dark: 	0.89	
+	- photo light: 	0.93	0.92	0.93
+	- photo text: 	0.91	0.92	0.92
+
+- relative median wage for city to get ok rent
+
+- how to point back to the city/coords and CL listings?
+

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+    <!--
+        NOTES:
+        + OpenLayers suggests custom compile since full build is
+          really big
+    
+    -->
+
+    <head>
+    <title>Empty Apartments</title>
+    <link rel="stylesheet" href="css/ol.css" type="text/css">
+    <style>
+        /* CSS RESET */
+        /* http://meyerweb.com/eric/tools/css/reset/ */
+        a,abbr,acronym,address,applet,article,aside,audio,b,big,blockquote,body,canvas,caption,center,cite,code,dd,del,details,dfn,div,dl,dt,em,embed,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,html,i,iframe,img,ins,kbd,label,legend,li,mark,menu,nav,object,ol,output,p,pre,q,ruby,s,samp,section,small,span,strike,strong,sub,summary,sup,table,tbody,td,tfoot,th,thead,time,tr,tt,u,ul,var,video{margin:0;padding:0;border:0;font:inherit;vertical-align:baseline}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:after,blockquote:before,q:after,q:before{content:'';content:none}table{border-collapse:collapse;border-spacing:0}
+
+        html, body {
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
+        a, a:link, a:visited {
+            color: red;
+            text-decoration: none;
+        }
+        a:active, a:hover {
+            color: black;
+            text-decoration: underline;
+        }
+
+        #grid {
+            width:  100%;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+        }       
+    </style>
+
+    <script src="js/ol.js"></script>
+</head>
+
+<body>
+    <!-- map target div -->
+    <div id="grid" class="grid"></div>
+    
+    <script>
+    // map views always need a projection
+    // here we just want to map image coordinates directly
+    // to map coordinates, so we create a projection that
+    // uses the image extent in pixels
+    // var extent = [0, 0, 1024, 968];
+    var extent = [0, 0, 7604, 6750];
+    var projection = new ol.proj.Projection({
+        code: 'xkcd-image',
+        units: 'pixels',
+        extent: extent
+    });
+
+    var map = new ol.Map({
+        layers: [
+            new ol.layer.Image({
+                source: new ol.source.ImageStatic({
+                    attributions: '"Empty Apartments" is a project by <a href="http://www.driftstation.org">Drift Station</a> &mdash; <a href="">more info</a>',
+                    url: 'images/test.jpg',
+                    projection: projection,
+                    imageExtent: extent
+                })
+            })
+        ],
+        target: 'grid',
+        view: new ol.View({
+            projection: projection,
+            center:     ol.extent.getCenter(extent),
+            zoom:       4,
+            minZoom:    4,
+            maxZoom:    4
+        }),
+        controls: ol.control.defaults().extend([
+            new ol.control.FullScreen()
+        ])
+    });
+    </script>
+    <script src="js/smartquotes.min.js"></script>
+</body>
+</html>
+
