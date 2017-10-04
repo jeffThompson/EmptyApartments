@@ -1,0 +1,7 @@
+*.h5
+ApartmentImages/
+Website/tile*
+GridLayout/data/
+GridLayout/data*
+GridLayout/OlderVersions/
+GridLayout/rendering*
